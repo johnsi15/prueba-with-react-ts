@@ -1,33 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '../../../../../../vite.svg'
+import { useEffect, useState } from 'react'
 import './App.css'
 
+const URL_FACT = 'https://catfact.ninja/fact'
+const URL_IMAGE_CAT = 'https://cataas.com'
+
 function App (): JSX.Element {
-  const [count, setCount] = useState(0)
+  const [fact, setFact] = useState<null | string>(null)
+  const [urlImage, setUrlImage] = useState<null | string>(null)
+
+  const getFact = async (): Promise<void> => {
+    fetch(URL_FACT)
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(res.statusText)
+        }
+
+        return await res.json()
+      })
+      .then(({ fact }: { fact: string }) => {
+        // console.log({ fact })
+        const firstWord = fact.split(' ').slice(0, 3).join(' ')
+        console.log(firstWord)
+        setFact(firstWord)
+        getCat({ fact: firstWord })
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  const getCat = ({ fact }: { fact: string }): void => {
+    console.log(fact)
+
+    fetch(`${URL_IMAGE_CAT}/cat/says/${fact}?json=true`)
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(res.statusText)
+        }
+
+        return await res.json()
+      })
+      .then(({ url }) => {
+        console.log({ url })
+        setUrlImage(url)
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  useEffect(() => {
+    getFact().catch(err => { console.log(err) })
+  }, [])
   return (
-    <>
-      <div>
-        <a href='https://vitejs.dev' target='_blank' rel='noreferrer'>
-          <img src={viteLogo} className='logo' alt='Vite logo' />
-        </a>
-        <a href='https://react.dev' target='_blank' rel='noreferrer'>
-          <img src={reactLogo} className='logo react' alt='React logo' />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className='card'>
-        <button onClick={() => { setCount((count) => count + 1) }}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className='read-the-docs'>
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <main>
+      <h2>La palabra es: {fact}</h2>
+      {urlImage != null && <img src={`${URL_IMAGE_CAT}/${urlImage}`} alt={urlImage} />}
+    </main>
   )
 }
 
