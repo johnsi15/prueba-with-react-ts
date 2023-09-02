@@ -1,14 +1,10 @@
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
-  parserOptions: {
-    project: './tsconfig.json'
-  },
   extends: [
-    // 'eslint:recommended',
+    'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:react-hooks/recommended',
-    './node_modules/ts-standard/eslintrc.json',
+    'plugin:react-hooks/recommended'
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs'],
   parser: '@typescript-eslint/parser',
@@ -16,9 +12,9 @@ module.exports = {
   rules: {
     'react-refresh/only-export-components': [
       'warn',
-      { allowConstantExport: true },
+      { allowConstantExport: true }
     ],
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn'
-  },
+  }
 }
