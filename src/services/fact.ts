@@ -1,17 +1,15 @@
 const URL_FACT = 'https://catfact.ninja/fact'
-export async function getRandomFact (): Promise<string> {
-  return await fetch(URL_FACT)
-    .then(async (res) => {
+export function getRandomFact (): Promise<string> {
+  return fetch(URL_FACT)
+    .then((res) => {
       if (!res.ok) {
         throw new Error(res.statusText)
       }
 
-      const fact = await res.json()
-      const firstWord = fact.split(' ', 3).join(' ')
-      console.log(firstWord)
-      // setFact(firstWord)
-      // getCat({ fact: firstWord })
-      return fact.fact
+      return res.json()
+    })
+    .then(({ fact }) => {
+      return fact
     })
     .catch(err => {
       console.log(err)

@@ -2,42 +2,64 @@ import { useEffect, useState } from 'react'
 import type { MouseEventHandler } from 'react'
 import './App.css'
 import { getRandomFact } from './services/fact'
-import { getCat } from './services/cat'
+import { getImageCat } from './services/cat'
 const URL_IMAGE_CAT = 'https://cataas.com'
 
-function App (): JSX.Element {
-  const [fact, setFact] = useState<null | string>(null)
-  const [urlImage, setUrlImage] = useState<null | string>(null)
+interface WordFact {
+  fact: string | null
+  refreshFact?: () => void
+}
 
-  const getFact = (): void => {
+interface CatImage {
+  urlImage: string | null
+}
+
+function useFact (): WordFact {
+  const [fact, setFact] = useState<null | string>(null)
+
+  const refreshFact = (): void => {
     getRandomFact()
-      .then(newFact => {
-        setFact(newFact)
-        getCat({ fact: newFact })
-          .then(data => {
-            console.log(data)
-            setUrlImage(data)
-          }).catch(err => { console.log(err) })
+      .then(fact => {
+        const firstWord = fact.split(' ', 3).join(' ')
+        console.log(firstWord)
+        setFact(firstWord)
       }).catch(err => { console.log(err) })
   }
+
+  useEffect(refreshFact, [])
+
+  return { fact, refreshFact }
+}
+
+function useCat ({ fact }: WordFact): CatImage {
+  const [urlImage, setUrlImage] = useState<null | string>(null)
 
   useEffect(() => {
     if (fact == null) return
 
-    getFact()
-    // console.log('load...')
-  }, [])
+    getImageCat({ fact })
+      .then(urlImage => {
+        setUrlImage(urlImage)
+      }).catch(err => { console.log(err) })
+  }, [fact])
+
+  return { urlImage }
+}
+function App (): JSX.Element {
+  const { fact, refreshFact } = useFact()
+  const { urlImage } = useCat({ fact })
 
   const getNewCat: MouseEventHandler<HTMLButtonElement> = () => {
-    getFact()
+    if (typeof refreshFact === 'function') {
+      refreshFact()
+    }
   }
 
   return (
     <main>
       {fact != null && <h2 className='fact'>This is a cat fact: {fact}</h2>}
-      {urlImage != null && <img src={`${URL_IMAGE_CAT}/${urlImage}`} alt={urlImage} />}
-
       <button onClick={getNewCat} className='getCat'>Get New Cat</button>
+      {urlImage != null && <img src={`${URL_IMAGE_CAT}/${urlImage}`} alt={urlImage} />}
     </main>
   )
 }
